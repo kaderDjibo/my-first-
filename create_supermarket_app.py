@@ -191,6 +191,7 @@ def init_db():
     )
     """)
 
+    # PURCHASE ORDER ITEMS
     c.execute("""
     CREATE TABLE IF NOT EXISTS purchase_order_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -222,106 +223,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-REQUIREMENTS = """streamlit>=1.30.0,<2.0.0
-pandas>=1.5.0,<3.0.0
-numpy>=1.23.0,<2.0.0
-scikit-learn>=1.2.0,<2.0.0
-matplotlib>=3.7.0,<4.0.0
-"""
-
-
-def main():
-    folder = "supermarket_app"
-    os.makedirs(folder, exist_ok=True)
-
-    app_path = os.path.join(folder, "app.py")
-    req_path = os.path.join(folder, "requirements.txt")
-
-    with open(app_path, "w", encoding="utf-8") as f:
-        f.write(dedent(APP_CODE).lstrip())
-
-    with open(req_path, "w", encoding="utf-8") as f:
-        f.write(REQUIREMENTS.strip() + "\n")
-
-    print(f"Created folder '{folder}' with app.py and requirements.txt.")
-    print("Next steps:")
-    print(f"  cd {folder}")
-    print("  python -m venv venv")
-    print("  venv\\Scripts\\activate  (Windows)  OR  source venv/bin/activate  (macOS/Linux)")
-    print("  pip install -r requirements.txt")
-    print("  streamlit run app.py")
-
-
-if __name__ == "__main__":
-    main()
-    CREATE TABLE IF NOT EXISTS suppliers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        contact_name TEXT,
-        phone TEXT,
-        email TEXT,
-        address TEXT,
-        notes TEXT
-    )
-    """)
-
-    # PRODUCT-SUPPLIER LINK
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS product_suppliers (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER,
-        supplier_id INTEGER,
-        is_primary INTEGER DEFAULT 1,
-        UNIQUE(product_id, supplier_id),
-        FOREIGN KEY(product_id) REFERENCES products(id),
-        FOREIGN KEY(supplier_id) REFERENCES suppliers(id)
-    )
-    """)
-
-    # PURCHASE ORDERS
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS purchase_orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        supplier_id INTEGER,
-        store_id INTEGER,
-        timestamp TEXT,
-        status TEXT,
-        total_amount REAL,
-        FOREIGN KEY(supplier_id) REFERENCES suppliers(id),
-        FOREIGN KEY(store_id) REFERENCES stores(id)
-    )
-    """)
-
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS purchase_order_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        purchase_order_id INTEGER,
-        product_id INTEGER,
-        qty INTEGER,
-        unit_cost REAL,
-        line_total REAL,
-        FOREIGN KEY(purchase_order_id) REFERENCES purchase_orders(id),
-        FOREIGN KEY(product_id) REFERENCES products(id)
-    )
-    """)
-
-    # Ensure at least one admin user
-    c.execute("SELECT COUNT(*) FROM users")
-    u_count = c.fetchone()[0]
-    if u_count == 0:
-        # default admin / admin123
-        pwd = "admin123"
-        pwd_hash = hashlib.sha256(pwd.encode("utf-8")).hexdigest()
-        c.execute(
-            """
-            INSERT INTO users (name, username, password_hash, role, store_id)
-            VALUES (?, ?, ?, ?, NULL)
-            """,
-            ("Admin", "admin", pwd_hash, "admin"),
-        )
-
-    conn.commit()
-    conn.close()
 
 def get_default_store_id():
     conn = get_connection()
